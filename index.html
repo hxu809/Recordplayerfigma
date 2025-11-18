@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Record Player</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #svg-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        svg {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 专辑按钮样式 */
+        .album-button {
+            cursor: pointer;
+            transition: opacity 0.3s ease, filter 0.3s ease;
+        }
+
+        .album-button:hover {
+            opacity: 0.8;
+            filter: brightness(1.1);
+        }
+
+        .album-button:active {
+            transform: scale(0.98);
+        }
+
+        /* 唱片动画 */
+        .record {
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-origin: center;
+        }
+
+        .record.active {
+            opacity: 1 !important;
+        }
+
+        /* 旋转动画 */
+        @keyframes spin {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .record.spinning {
+            animation: spin 3s linear infinite;
+        }
+
+        /* 提示文字 */
+        .info {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="info">点击左侧专辑封面查看唱片</div>
+    <div id="svg-container"></div>
+
+    <script>
+        // 加载 SVG
+        fetch('Recordplayer.svg')
+            .then(response => response.text())
+            .then(svgContent => {
+                document.getElementById('svg-container').innerHTML = svgContent;
+                initializeInteraction();
+            });
+
+        function initializeInteraction() {
+            const recordCenter = { x: 1483, y: 527 };
+
+            // 定义三张专辑和对应唱片的初始位置
+            const albums = [
+                {
+                    buttonId: 'weeknd-btn',
+                    recordId: 'weeknd-record',
+                    startPos: { x: 80 + 189, y: 25 + 128 }  // 按钮中心
+                },
+                {
+                    buttonId: 'beatles-btn',
+                    recordId: 'beatles-record',
+                    startPos: { x: 88 + 158.5, y: 347 + 110.5 }
+                },
+                {
+                    buttonId: 'charlie-btn',
+                    recordId: 'charlie-record',
+                    startPos: { x: 88 + 168, y: 632 + 103.5 }
+                }
+            ];
+
+            let currentRecord = null;
+
+            albums.forEach(album => {
+                const button = document.getElementById(album.buttonId);
+                const record = document.getElementById(album.recordId);
+
+                if (!button || !record) return;
+
+                // 设置唱片初始位置（在按钮位置）
+                const dx = album.startPos.x - recordCenter.x;
+                const dy = album.startPos.y - recordCenter.y;
+                record.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`;
+
+                // 点击事件
+                button.addEventListener('click', () => {
+                    // 隐藏当前显示的唱片
+                    if (currentRecord && currentRecord !== record) {
+                        currentRecord.classList.remove('active', 'spinning');
+                        const prevAlbum = albums.find(a => a.recordId === currentRecord.id);
+                        if (prevAlbum) {
+                            const dx = prevAlbum.startPos.x - recordCenter.x;
+                            const dy = prevAlbum.startPos.y - recordCenter.y;
+                            currentRecord.style.transform = `translate(${dx}px, ${dy}px) scale(0.5)`;
+                        }
+                    }
+
+                    // 显示并移动新唱片到中心
+                    if (currentRecord === record) {
+                        // 如果点击同一张，切换旋转状态
+                        record.classList.toggle('spinning');
+                    } else {
+                        record.classList.add('active');
+                        record.style.transform = 'translate(0px, 0px) scale(1)';
+
+                        // 延迟启动旋转动画
+                        setTimeout(() => {
+                            record.classList.add('spinning');
+                        }, 800);
+
+                        currentRecord = record;
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>
