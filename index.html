@@ -64,12 +64,21 @@
             pointer-events: none;
         }
 
-        /* 拖拽克隆元素 */
-        .drag-clone {
+        /* 拖拽指示器 */
+        .drag-indicator {
             position: fixed;
             pointer-events: none;
             z-index: 9999;
-            opacity: 0.7;
+            opacity: 0.8;
+            background: rgba(100, 150, 255, 0.5);
+            border: 2px solid rgba(100, 150, 255, 0.8);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+            font-weight: bold;
         }
 
         /* 拖放目标区域 */
@@ -362,7 +371,7 @@
             // 专辑拖拽事件（使用鼠标事件）
             let isDragging = false;
             let draggedAlbum = null;
-            let dragClone = null;
+            let dragIndicator = null;
 
             albums.forEach(album => {
                 const button = document.getElementById(album.buttonId);
@@ -377,14 +386,15 @@
                     draggedAlbum = album;
                     button.classList.add('dragging');
 
-                    // 创建拖拽克隆
-                    dragClone = button.cloneNode(true);
-                    dragClone.classList.add('drag-clone');
-                    dragClone.style.width = button.getBBox().width + 'px';
-                    dragClone.style.height = button.getBBox().height + 'px';
-                    dragClone.style.left = e.clientX - button.getBBox().width / 2 + 'px';
-                    dragClone.style.top = e.clientY - button.getBBox().height / 2 + 'px';
-                    document.body.appendChild(dragClone);
+                    // 创建拖拽指示器（简单的div）
+                    dragIndicator = document.createElement('div');
+                    dragIndicator.className = 'drag-indicator';
+                    dragIndicator.style.width = '150px';
+                    dragIndicator.style.height = '100px';
+                    dragIndicator.style.left = (e.clientX - 75) + 'px';
+                    dragIndicator.style.top = (e.clientY - 50) + 'px';
+                    dragIndicator.textContent = '拖拽中...';
+                    document.body.appendChild(dragIndicator);
 
                     e.preventDefault();
                 });
@@ -392,12 +402,11 @@
 
             // 全局鼠标移动事件
             document.addEventListener('mousemove', (e) => {
-                if (!isDragging || !dragClone) return;
+                if (!isDragging || !dragIndicator) return;
 
-                // 更新克隆位置
-                const rect = dragClone.getBoundingClientRect();
-                dragClone.style.left = e.clientX - rect.width / 2 + 'px';
-                dragClone.style.top = e.clientY - rect.height / 2 + 'px';
+                // 更新指示器位置
+                dragIndicator.style.left = (e.clientX - 75) + 'px';
+                dragIndicator.style.top = (e.clientY - 50) + 'px';
 
                 // 检查是否在拖放区域上方
                 if (dropZone) {
@@ -494,9 +503,9 @@
                 if (dropZone) {
                     dropZone.classList.remove('drag-over');
                 }
-                if (dragClone) {
-                    document.body.removeChild(dragClone);
-                    dragClone = null;
+                if (dragIndicator) {
+                    document.body.removeChild(dragIndicator);
+                    dragIndicator = null;
                 }
                 isDragging = false;
                 draggedAlbum = null;
