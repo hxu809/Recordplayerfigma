@@ -118,6 +118,11 @@
     <div class="info">点击左侧专辑封面查看唱片</div>
     <div id="svg-container"></div>
 
+    <!-- Audio elements -->
+    <audio id="weeknd-audio" src="After_Hours.mp3" loop></audio>
+    <audio id="beatles-audio" src="Oh_Darling.mp3" loop></audio>
+    <audio id="charlie-audio" src="We_Don't_Talk_Anymore.mp3" loop></audio>
+
     <script>
         // 加载 SVG
         fetch('Recordplayer.svg')
@@ -132,19 +137,23 @@
             const albums = [
                 {
                     buttonId: 'weeknd-btn',
-                    recordId: 'charlie-record'
+                    recordId: 'charlie-record',
+                    audioId: 'weeknd-audio'
                 },
                 {
                     buttonId: 'beatles-btn',
-                    recordId: 'weeknd-record'
+                    recordId: 'weeknd-record',
+                    audioId: 'beatles-audio'
                 },
                 {
                     buttonId: 'charlie-btn',
-                    recordId: 'beatles-record'
+                    recordId: 'beatles-record',
+                    audioId: 'charlie-audio'
                 }
             ];
 
             let currentRecord = null;
+            let currentAudio = null;
             let isTonearmTilted = false;
             let isPlaying = false;
 
@@ -180,6 +189,11 @@
                 if (currentRecord) {
                     currentRecord.classList.add('spinning');
                     isPlaying = true;
+                    // 播放音频
+                    if (currentAudio) {
+                        currentAudio.currentTime = 0; // 从头开始
+                        currentAudio.play().catch(err => console.log('Audio play failed:', err));
+                    }
                 }
             }
 
@@ -188,6 +202,11 @@
                 if (currentRecord) {
                     currentRecord.classList.remove('spinning');
                     isPlaying = false;
+                    // 暂停音频
+                    if (currentAudio) {
+                        currentAudio.pause();
+                        currentAudio.currentTime = 0;
+                    }
                 }
             }
 
@@ -195,10 +214,17 @@
             albums.forEach(album => {
                 const button = document.getElementById(album.buttonId);
                 const record = document.getElementById(album.recordId);
+                const audio = document.getElementById(album.audioId);
 
                 if (!button || !record) return;
 
                 button.addEventListener('click', () => {
+                    // 停止当前播放的音频
+                    if (currentAudio && isPlaying) {
+                        currentAudio.pause();
+                        currentAudio.currentTime = 0;
+                    }
+
                     // 隐藏当前显示的唱片
                     if (currentRecord && currentRecord !== record) {
                         currentRecord.classList.remove('active', 'spinning');
@@ -208,6 +234,7 @@
                     if (currentRecord !== record) {
                         record.classList.add('active');
                         currentRecord = record;
+                        currentAudio = audio;
                         isPlaying = false;
                         // 切换唱片时，唱臂恢复竖直
                         isTonearmTilted = false;
