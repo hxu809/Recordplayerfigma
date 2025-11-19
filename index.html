@@ -39,6 +39,11 @@
 <body>
     <div id="svg-container"></div>
 
+    <!-- 音频元素 -->
+    <audio id="weeknd-audio" src="After_Hours.mp3" loop></audio>
+    <audio id="beatles-audio" src="Oh_Darling.mp3" loop></audio>
+    <audio id="charlie-audio" src="We_Don't_Talk_Anymore.mp3" loop></audio>
+
     <script>
         // 加载 SVG 文件
         fetch('Recordplayer.svg')
@@ -63,6 +68,11 @@
 
             const recordCenter = document.getElementById('RecordCenter');
 
+            // 获取音频元素
+            const weekndAudio = document.getElementById('weeknd-audio');
+            const beatlesAudio = document.getElementById('beatles-audio');
+            const charlieAudio = document.getElementById('charlie-audio');
+
             // 获取 RecordCenter 的位置
             const centerX = 1483;
             const centerY = 527;
@@ -74,16 +84,23 @@
                 charlie: { x: 870, y: 891 }
             };
 
-            // 当前显示的唱片
+            // 当前显示的唱片和音频
             let currentRecord = null;
+            let currentAudio = null;
 
-            // 移动唱片到中心的函数
-            function moveRecordToCenter(record, recordName) {
+            // 移动唱片到中心并播放音乐的函数
+            function moveRecordToCenter(record, recordName, audio) {
                 if (!record) return;
 
                 // 如果点击的是当前正在显示的唱片，则不做任何操作
                 if (currentRecord === record) {
                     return;
+                }
+
+                // 停止之前的音乐
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
                 }
 
                 // 隐藏之前的唱片
@@ -114,30 +131,38 @@
                     });
                 });
 
+                // 播放新音乐
+                if (audio) {
+                    audio.play().catch(error => {
+                        console.log('音频播放需要用户交互:', error);
+                    });
+                    currentAudio = audio;
+                }
+
                 currentRecord = record;
             }
 
             // 添加点击事件
             if (weekndCover) {
                 weekndCover.addEventListener('click', () => {
-                    moveRecordToCenter(weekndRecord, 'weeknd');
+                    moveRecordToCenter(weekndRecord, 'weeknd', weekndAudio);
                 });
             }
 
             if (beatlesCover) {
                 beatlesCover.addEventListener('click', () => {
-                    moveRecordToCenter(beatlesRecord, 'beatles');
+                    moveRecordToCenter(beatlesRecord, 'beatles', beatlesAudio);
                 });
             }
 
             if (charlieCover) {
                 charlieCover.addEventListener('click', () => {
-                    moveRecordToCenter(charlieRecord, 'charlie');
+                    moveRecordToCenter(charlieRecord, 'charlie', charlieAudio);
                 });
             }
 
             console.log('交互功能已初始化');
-            console.log('点击左侧的专辑封面来查看唱片移动到播放器中心的动画效果');
+            console.log('点击左侧的专辑封面来查看唱片移动到播放器中心的动画效果，并播放对应的音乐');
         }
     </script>
 </body>
