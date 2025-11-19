@@ -17,6 +17,10 @@
   .album-cover:active {
     transform: scale(0.98);
   }
+  /* 隐藏倾斜的唱臂 */
+  #Playerarm2 {
+    display: none;
+  }
 </style>
 <g id="Frame 2">
 <rect width="1920" height="1080" fill="white"/>
