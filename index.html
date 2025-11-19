@@ -174,7 +174,7 @@
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
-    <div class="info">拖拽左侧专辑封面到唱片机上</div>
+    <div class="info">Drag album covers to the record player</div>
     <div id="svg-container"></div>
 
     <!-- Audio elements -->
@@ -393,7 +393,7 @@
                     dragIndicator.style.height = '100px';
                     dragIndicator.style.left = (e.clientX - 75) + 'px';
                     dragIndicator.style.top = (e.clientY - 50) + 'px';
-                    dragIndicator.textContent = '拖拽中...';
+                    dragIndicator.textContent = 'Dragging...';
                     document.body.appendChild(dragIndicator);
 
                     e.preventDefault();
