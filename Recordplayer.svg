@@ -25,8 +25,11 @@
 <rect x="1399.5" y="442.858" width="4" height="22" transform="rotate(-45 1399.5 442.858)" fill="#1D1D1D"/>
 <rect x="1566.24" y="607.415" width="4" height="22" transform="rotate(135 1566.24 607.415)" fill="#1D1D1D"/>
 <rect x="1563.41" y="440" width="4" height="22" transform="rotate(45 1563.41 440)" fill="#1D1D1D"/>
+<!-- Play Button -->
+<g id="play-button" class="play-btn locked">
 <circle cx="1727" cy="417" r="29" fill="black"/>
 <circle cx="1727" cy="417" r="19" fill="#313131"/>
+</g>
 <rect x="1755" y="463" width="25" height="48" fill="#757575"/>
 <rect x="1757" y="465" width="21" height="42" fill="#151515"/>
 <path d="M1751.5 465H1773L1776.5 486L1773 507H1751.5L1754 486L1751.5 465Z" fill="#313131"/>

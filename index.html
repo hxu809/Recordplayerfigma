@@ -62,6 +62,43 @@
             opacity: 0.8;
         }
 
+        /* 播放按钮样式 */
+        .play-btn {
+            transition: opacity 0.3s ease, filter 0.3s ease;
+        }
+
+        .play-btn.locked {
+            opacity: 0.3;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+
+        .play-btn.unlocked {
+            opacity: 1;
+            cursor: pointer;
+            filter: grayscale(0);
+        }
+
+        .play-btn.unlocked:hover {
+            opacity: 0.8;
+            transform: scale(1.05);
+        }
+
+        /* 唱片旋转动画 */
+        @keyframes spin-record {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .record.spinning {
+            animation: spin-record 4s linear infinite;
+            transform-origin: center;
+        }
+
         /* 提示文字 */
         .info {
             position: fixed;
@@ -109,10 +146,50 @@
 
             let currentRecord = null;
             let isTonearmTilted = false;
+            let isPlaying = false;
 
-            // 获取唱臂元素
+            // 获取元素
             const verticalTonearm = document.getElementById('vertical-tonearm');
             const tiltedTonearm = document.getElementById('tilted-tonearm');
+            const playButton = document.getElementById('play-button');
+
+            // 更新播放按钮状态
+            function updatePlayButtonState() {
+                if (!playButton) return;
+
+                // 只有当：有唱片显示 且 唱臂已倾斜时，才解锁播放按钮
+                const canPlay = currentRecord &&
+                               currentRecord.classList.contains('active') &&
+                               isTonearmTilted;
+
+                if (canPlay) {
+                    playButton.classList.remove('locked');
+                    playButton.classList.add('unlocked');
+                } else {
+                    playButton.classList.remove('unlocked');
+                    playButton.classList.add('locked');
+                    // 如果条件不满足，停止播放
+                    if (isPlaying) {
+                        stopPlaying();
+                    }
+                }
+            }
+
+            // 开始播放
+            function startPlaying() {
+                if (currentRecord) {
+                    currentRecord.classList.add('spinning');
+                    isPlaying = true;
+                }
+            }
+
+            // 停止播放
+            function stopPlaying() {
+                if (currentRecord) {
+                    currentRecord.classList.remove('spinning');
+                    isPlaying = false;
+                }
+            }
 
             // 专辑点击事件
             albums.forEach(album => {
@@ -124,14 +201,21 @@
                 button.addEventListener('click', () => {
                     // 隐藏当前显示的唱片
                     if (currentRecord && currentRecord !== record) {
-                        currentRecord.classList.remove('active');
+                        currentRecord.classList.remove('active', 'spinning');
                     }
 
                     // 显示新唱片
                     if (currentRecord !== record) {
                         record.classList.add('active');
                         currentRecord = record;
+                        isPlaying = false;
+                        // 切换唱片时，唱臂恢复竖直
+                        isTonearmTilted = false;
+                        verticalTonearm.style.opacity = '1';
+                        tiltedTonearm.style.opacity = '0';
                     }
+
+                    updatePlayButtonState();
                 });
             });
 
@@ -153,6 +237,7 @@
                     tiltedTonearm.style.opacity = '1';
                 }
                 isTonearmTilted = !isTonearmTilted;
+                updatePlayButtonState();
             }
 
             // 为两个唱臂添加点击事件
@@ -162,6 +247,23 @@
             if (tiltedTonearm) {
                 tiltedTonearm.addEventListener('click', toggleTonearm);
             }
+
+            // 播放按钮点击事件
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    // 只有解锁状态才能点击
+                    if (playButton.classList.contains('unlocked')) {
+                        if (isPlaying) {
+                            stopPlaying();
+                        } else {
+                            startPlaying();
+                        }
+                    }
+                });
+            }
+
+            // 初始化播放按钮状态
+            updatePlayButtonState();
         }
     </script>
 </body>
