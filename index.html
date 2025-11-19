@@ -45,7 +45,7 @@
 
         /* 专辑按钮样式 */
         .album-button {
-            cursor: pointer;
+            cursor: grab;
             transition: opacity 0.3s ease, filter 0.3s ease;
         }
 
@@ -55,7 +55,22 @@
         }
 
         .album-button:active {
-            transform: scale(0.98);
+            cursor: grabbing;
+        }
+
+        .album-button.dragging {
+            opacity: 0.5;
+        }
+
+        /* 拖放目标区域 */
+        #drop-zone {
+            transition: all 0.3s ease;
+        }
+
+        #drop-zone.drag-over {
+            filter: brightness(1.2);
+            stroke: #4a9eff;
+            stroke-width: 3;
         }
 
         /* 唱片动画 */
@@ -141,7 +156,7 @@
 </head>
 <body>
     <canvas id="particle-canvas"></canvas>
-    <div class="info">点击左侧专辑封面查看唱片</div>
+    <div class="info">拖拽左侧专辑封面到唱片机上</div>
     <div id="svg-container"></div>
 
     <!-- Audio elements -->
@@ -309,6 +324,7 @@
             const verticalTonearm = document.getElementById('vertical-tonearm');
             const tiltedTonearm = document.getElementById('tilted-tonearm');
             const tonearmNeedle = document.getElementById('tonearm-needle');
+            const dropZone = document.getElementById('drop-zone');
 
             // 开始播放
             function startPlaying() {
@@ -334,7 +350,7 @@
                 }
             }
 
-            // 专辑点击事件
+            // 专辑拖拽事件
             albums.forEach(album => {
                 const button = document.getElementById(album.buttonId);
                 const record = document.getElementById(album.recordId);
@@ -342,7 +358,50 @@
 
                 if (!button || !record) return;
 
-                button.addEventListener('click', () => {
+                // 使专辑可拖拽
+                button.setAttribute('draggable', 'true');
+
+                // 拖拽开始
+                button.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('albumId', album.buttonId);
+                    button.classList.add('dragging');
+                });
+
+                // 拖拽结束
+                button.addEventListener('dragend', () => {
+                    button.classList.remove('dragging');
+                });
+            });
+
+            // 拖放目标区域事件
+            if (dropZone) {
+                // 阻止默认行为以允许拖放
+                dropZone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    dropZone.classList.add('drag-over');
+                });
+
+                dropZone.addEventListener('dragleave', () => {
+                    dropZone.classList.remove('drag-over');
+                });
+
+                // 拖放事件
+                dropZone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    dropZone.classList.remove('drag-over');
+
+                    const albumId = e.dataTransfer.getData('albumId');
+                    const album = albums.find(a => a.buttonId === albumId);
+
+                    if (!album) return;
+
+                    const record = document.getElementById(album.recordId);
+                    const audio = document.getElementById(album.audioId);
+
+                    if (!record) return;
+
                     // 停止当前播放的音频并重置
                     if (currentAudio) {
                         currentAudio.pause();
@@ -374,7 +433,7 @@
                         tiltedTonearm.style.opacity = '0';
                     }
                 });
-            });
+            }
 
             // 唱臂点击事件 - 只有当有唱片显示时才能切换
             function toggleTonearm() {
