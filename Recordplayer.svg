@@ -1,13 +1,32 @@
 <svg width="1920" height="1080" viewBox="0 0 1920 1080" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<style>
+  .record {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, transform 0.8s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  .record.show {
+    opacity: 1;
+  }
+  .album-cover {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .album-cover:hover {
+    transform: scale(1.05);
+  }
+  .album-cover:active {
+    transform: scale(0.98);
+  }
+</style>
 <g id="Frame 2">
 <rect width="1920" height="1080" fill="white"/>
-<g id="Weeknd">
+<g id="Weeknd" class="album-cover">
 <rect id="weeknd 1" x="80" y="25" width="378" height="256" fill="url(#pattern0_11_129)"/>
 </g>
-<g id="Beatles">
+<g id="Beatles" class="album-cover">
 <rect id="Beatles - Abbey Road Anniversary (Vinyl)_pixian_ai 1" x="88" y="347" width="317" height="221" fill="url(#pattern1_11_129)"/>
 </g>
-<g id="Charlie">
+<g id="Charlie" class="album-cover">
 <rect id="Charlie Puth - Nine Track Mind (Atlantic 75th Anniversary Deluxe Edition) (Vinyl)_pixian_ai 1" x="88" y="632" width="336" height="207" fill="url(#pattern2_11_129)"/>
 </g>
 <g id="Recordplayer">
@@ -48,7 +67,7 @@
 </g>
 </g>
 </g>
-<g id="BeatlesRecord">
+<g id="BeatlesRecord" class="record">
 <g id="Group 7">
 <circle id="Ellipse 8" cx="871" cy="533" r="175" fill="black"/>
 <g id="Group 6">
@@ -61,7 +80,7 @@
 </g>
 </g>
 </g>
-<g id="CharlieRecord">
+<g id="CharlieRecord" class="record">
 <g id="Group 7_2">
 <circle id="Ellipse 8_2" cx="870" cy="891" r="175" fill="black"/>
 <g id="Group 6_2">
@@ -112,7 +131,7 @@
 </g>
 </g>
 </g>
-<g id="WeekndRecord">
+<g id="WeekndRecord" class="record">
 <g id="Group 7_3">
 <circle id="Ellipse 8_5" cx="872" cy="175" r="175" fill="black"/>
 <g id="Group 6_3">
