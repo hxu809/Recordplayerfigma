@@ -423,6 +423,32 @@
                     }
                 });
             }
+
+            // ESC键弹出专辑 - 只有在暂停状态时才能弹出
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' || e.keyCode === 27) {
+                    // 只有当有唱片显示且处于暂停状态时才能弹出
+                    if (currentRecord && !isPlaying) {
+                        // 停止音频并重置
+                        if (currentAudio) {
+                            currentAudio.pause();
+                            currentAudio.currentTime = 0;
+                        }
+
+                        // 隐藏唱片
+                        currentRecord.classList.remove('active', 'spinning');
+
+                        // 重置唱臂到竖直状态
+                        isTonearmTilted = false;
+                        verticalTonearm.style.opacity = '1';
+                        tiltedTonearm.style.opacity = '0';
+
+                        // 清空当前状态
+                        currentRecord = null;
+                        currentAudio = null;
+                    }
+                }
+            });
         }
     </script>
 </body>
