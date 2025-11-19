@@ -73,6 +73,10 @@
             const beatlesAudio = document.getElementById('beatles-audio');
             const charlieAudio = document.getElementById('charlie-audio');
 
+            // 获取唱臂元素
+            const playerArm1 = document.getElementById('Playerarm');
+            const playerArm2 = document.getElementById('Playerarm2');
+
             // 获取 RecordCenter 的位置
             const centerX = 1483;
             const centerY = 527;
@@ -87,6 +91,7 @@
             // 当前显示的唱片和音频
             let currentRecord = null;
             let currentAudio = null;
+            let isArmTilted = false; // 唱臂是否倾斜
 
             // 移动唱片到中心并播放音乐的函数
             function moveRecordToCenter(record, recordName, audio) {
@@ -114,6 +119,15 @@
                             currentRecord.classList.remove('show');
                         }
                     }, 300);
+                }
+
+                // 切换唱片时，重置唱臂到竖直状态
+                if (isArmTilted) {
+                    playerArm2.style.opacity = '0';
+                    playerArm2.style.pointerEvents = 'none';
+                    playerArm1.style.opacity = '1';
+                    playerArm1.style.pointerEvents = 'auto';
+                    isArmTilted = false;
                 }
 
                 // 计算移动距离
@@ -161,8 +175,45 @@
                 });
             }
 
+            // 切换唱臂状态的函数
+            function togglePlayerArm() {
+                // 只有当有唱片在播放器上时才能切换唱臂
+                if (!currentRecord) {
+                    console.log('请先选择一张专辑');
+                    return;
+                }
+
+                if (isArmTilted) {
+                    // 从倾斜切换到竖直
+                    playerArm2.style.opacity = '0';
+                    playerArm2.style.pointerEvents = 'none';
+                    playerArm1.style.opacity = '1';
+                    playerArm1.style.pointerEvents = 'auto';
+                    isArmTilted = false;
+                    console.log('唱臂切换到竖直状态');
+                } else {
+                    // 从竖直切换到倾斜
+                    playerArm1.style.opacity = '0';
+                    playerArm1.style.pointerEvents = 'none';
+                    playerArm2.style.opacity = '1';
+                    playerArm2.style.pointerEvents = 'auto';
+                    isArmTilted = true;
+                    console.log('唱臂切换到倾斜状态');
+                }
+            }
+
+            // 为唱臂添加点击事件
+            if (playerArm1) {
+                playerArm1.addEventListener('click', togglePlayerArm);
+            }
+
+            if (playerArm2) {
+                playerArm2.addEventListener('click', togglePlayerArm);
+            }
+
             console.log('交互功能已初始化');
             console.log('点击左侧的专辑封面来查看唱片移动到播放器中心的动画效果，并播放对应的音乐');
+            console.log('当唱片在播放器上时，点击唱臂可以切换倾斜状态');
         }
     </script>
 </body>

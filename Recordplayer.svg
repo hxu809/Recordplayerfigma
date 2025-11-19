@@ -17,9 +17,19 @@
   .album-cover:active {
     transform: scale(0.98);
   }
-  /* 隐藏倾斜的唱臂 */
+  /* 唱臂样式 */
+  .playerarm {
+    cursor: pointer;
+    transition: opacity 0.5s ease-in-out;
+  }
+  .playerarm.hidden {
+    opacity: 0;
+    pointer-events: none;
+  }
+  /* 初始状态：竖直唱臂显示，倾斜唱臂隐藏 */
   #Playerarm2 {
-    display: none;
+    opacity: 0;
+    pointer-events: none;
   }
 </style>
 <g id="Frame 2">
@@ -97,7 +107,7 @@
 </g>
 </g>
 </g>
-<g id="Playerarm">
+<g id="Playerarm" class="playerarm">
 <g id="Group 4">
 <path id="Polygon 1" d="M1725.5 663L1724.2 654L1726.8 654L1725.5 663Z" fill="#3D3B3B"/>
 <path id="Rectangle 13_2" d="M1712 399H1740V439H1712V399Z" fill="black"/>
@@ -116,7 +126,7 @@
 </g>
 </g>
 </g>
-<g id="Playerarm2">
+<g id="Playerarm2" class="playerarm">
 <g id="Group 4_2">
 <path id="Polygon 1_2" d="M1590.48 628.134L1594.11 619.796L1596.32 621.163L1590.48 628.134Z" fill="#3D3B3B"/>
 <path id="Rectangle 13_3" d="M1717.86 396.505L1741.68 411.233L1720.64 445.252L1696.82 430.524L1717.86 396.505Z" fill="black"/>
