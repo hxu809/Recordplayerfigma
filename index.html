@@ -47,6 +47,7 @@
         .album-button {
             cursor: grab;
             transition: opacity 0.3s ease, filter 0.3s ease;
+            user-select: none;
         }
 
         .album-button:hover {
@@ -60,6 +61,15 @@
 
         .album-button.dragging {
             opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* 拖拽克隆元素 */
+        .drag-clone {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.7;
         }
 
         /* 拖放目标区域 */
@@ -68,9 +78,8 @@
         }
 
         #drop-zone.drag-over {
-            filter: brightness(1.2);
-            stroke: #4a9eff;
-            stroke-width: 3;
+            fill: #333 !important;
+            filter: brightness(1.5);
         }
 
         /* 唱片动画 */
@@ -350,7 +359,11 @@
                 }
             }
 
-            // 专辑拖拽事件
+            // 专辑拖拽事件（使用鼠标事件）
+            let isDragging = false;
+            let draggedAlbum = null;
+            let dragClone = null;
+
             albums.forEach(album => {
                 const button = document.getElementById(album.buttonId);
                 const record = document.getElementById(album.recordId);
@@ -358,82 +371,136 @@
 
                 if (!button || !record) return;
 
-                // 使专辑可拖拽
-                button.setAttribute('draggable', 'true');
-
-                // 拖拽开始
-                button.addEventListener('dragstart', (e) => {
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('albumId', album.buttonId);
+                // 鼠标按下开始拖拽
+                button.addEventListener('mousedown', (e) => {
+                    isDragging = true;
+                    draggedAlbum = album;
                     button.classList.add('dragging');
-                });
 
-                // 拖拽结束
-                button.addEventListener('dragend', () => {
-                    button.classList.remove('dragging');
+                    // 创建拖拽克隆
+                    dragClone = button.cloneNode(true);
+                    dragClone.classList.add('drag-clone');
+                    dragClone.style.width = button.getBBox().width + 'px';
+                    dragClone.style.height = button.getBBox().height + 'px';
+                    dragClone.style.left = e.clientX - button.getBBox().width / 2 + 'px';
+                    dragClone.style.top = e.clientY - button.getBBox().height / 2 + 'px';
+                    document.body.appendChild(dragClone);
+
+                    e.preventDefault();
                 });
             });
 
-            // 拖放目标区域事件
-            if (dropZone) {
-                // 阻止默认行为以允许拖放
-                dropZone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    e.dataTransfer.dropEffect = 'move';
-                    dropZone.classList.add('drag-over');
-                });
+            // 全局鼠标移动事件
+            document.addEventListener('mousemove', (e) => {
+                if (!isDragging || !dragClone) return;
 
-                dropZone.addEventListener('dragleave', () => {
-                    dropZone.classList.remove('drag-over');
-                });
+                // 更新克隆位置
+                const rect = dragClone.getBoundingClientRect();
+                dragClone.style.left = e.clientX - rect.width / 2 + 'px';
+                dragClone.style.top = e.clientY - rect.height / 2 + 'px';
 
-                // 拖放事件
-                dropZone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dropZone.classList.remove('drag-over');
+                // 检查是否在拖放区域上方
+                if (dropZone) {
+                    const dropRect = dropZone.getBoundingClientRect();
+                    const svgContainer = document.getElementById('svg-container');
+                    const containerRect = svgContainer.getBoundingClientRect();
 
-                    const albumId = e.dataTransfer.getData('albumId');
-                    const album = albums.find(a => a.buttonId === albumId);
+                    // 计算drop zone在页面上的实际位置
+                    const dropZoneCenterX = containerRect.left + (1483 / 1920) * containerRect.width;
+                    const dropZoneCenterY = containerRect.top + (527 / 1080) * containerRect.height;
+                    const dropZoneRadius = (148 / 1920) * containerRect.width;
 
-                    if (!album) return;
+                    // 计算鼠标到drop zone中心的距离
+                    const distance = Math.sqrt(
+                        Math.pow(e.clientX - dropZoneCenterX, 2) +
+                        Math.pow(e.clientY - dropZoneCenterY, 2)
+                    );
 
-                    const record = document.getElementById(album.recordId);
-                    const audio = document.getElementById(album.audioId);
-
-                    if (!record) return;
-
-                    // 停止当前播放的音频并重置
-                    if (currentAudio) {
-                        currentAudio.pause();
-                        currentAudio.currentTime = 0;
+                    if (distance < dropZoneRadius) {
+                        dropZone.classList.add('drag-over');
+                    } else {
+                        dropZone.classList.remove('drag-over');
                     }
+                }
+            });
 
-                    // 隐藏当前显示的唱片
-                    if (currentRecord && currentRecord !== record) {
-                        currentRecord.classList.remove('active', 'spinning');
+            // 全局鼠标松开事件
+            document.addEventListener('mouseup', (e) => {
+                if (!isDragging) return;
+
+                // 检查是否释放在drop zone上
+                let droppedOnZone = false;
+                if (dropZone) {
+                    const svgContainer = document.getElementById('svg-container');
+                    const containerRect = svgContainer.getBoundingClientRect();
+
+                    const dropZoneCenterX = containerRect.left + (1483 / 1920) * containerRect.width;
+                    const dropZoneCenterY = containerRect.top + (527 / 1080) * containerRect.height;
+                    const dropZoneRadius = (148 / 1920) * containerRect.width;
+
+                    const distance = Math.sqrt(
+                        Math.pow(e.clientX - dropZoneCenterX, 2) +
+                        Math.pow(e.clientY - dropZoneCenterY, 2)
+                    );
+
+                    if (distance < dropZoneRadius) {
+                        droppedOnZone = true;
                     }
+                }
 
-                    // 显示新唱片
-                    if (currentRecord !== record) {
-                        record.classList.add('active');
-                        currentRecord = record;
-                        currentAudio = audio;
-                        isPlaying = false;
+                // 如果放在drop zone上，加载唱片
+                if (droppedOnZone && draggedAlbum) {
+                    const record = document.getElementById(draggedAlbum.recordId);
+                    const audio = document.getElementById(draggedAlbum.audioId);
 
-                        // 设置音频分析器（每个音频独立）
-                        try {
-                            setupAudioAnalyser(audio, album.audioId);
-                        } catch (error) {
-                            console.log('Audio analyser setup failed:', error);
+                    if (record) {
+                        // 停止当前播放的音频并重置
+                        if (currentAudio) {
+                            currentAudio.pause();
+                            currentAudio.currentTime = 0;
                         }
 
-                        // 切换唱片时，唱臂恢复竖直
-                        isTonearmTilted = false;
-                        verticalTonearm.style.opacity = '1';
-                        tiltedTonearm.style.opacity = '0';
+                        // 隐藏当前显示的唱片
+                        if (currentRecord && currentRecord !== record) {
+                            currentRecord.classList.remove('active', 'spinning');
+                        }
+
+                        // 显示新唱片
+                        if (currentRecord !== record) {
+                            record.classList.add('active');
+                            currentRecord = record;
+                            currentAudio = audio;
+                            isPlaying = false;
+
+                            // 设置音频分析器（每个音频独立）
+                            try {
+                                setupAudioAnalyser(audio, draggedAlbum.audioId);
+                            } catch (error) {
+                                console.log('Audio analyser setup failed:', error);
+                            }
+
+                            // 切换唱片时，唱臂恢复竖直
+                            isTonearmTilted = false;
+                            verticalTonearm.style.opacity = '1';
+                            tiltedTonearm.style.opacity = '0';
+                        }
                     }
+                }
+
+                // 清理拖拽状态
+                document.querySelectorAll('.album-button').forEach(btn => {
+                    btn.classList.remove('dragging');
                 });
-            }
+                if (dropZone) {
+                    dropZone.classList.remove('drag-over');
+                }
+                if (dragClone) {
+                    document.body.removeChild(dragClone);
+                    dragClone = null;
+                }
+                isDragging = false;
+                draggedAlbum = null;
+            });
 
             // 唱臂点击事件 - 只有当有唱片显示时才能切换
             function toggleTonearm() {
