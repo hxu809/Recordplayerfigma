@@ -52,6 +52,16 @@
             opacity: 1 !important;
         }
 
+        /* 唱臂样式 */
+        .tonearm {
+            cursor: pointer;
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .tonearm:hover {
+            opacity: 0.8;
+        }
+
         /* 提示文字 */
         .info {
             position: fixed;
@@ -98,14 +108,19 @@
             ];
 
             let currentRecord = null;
+            let isTonearmTilted = false;
 
+            // 获取唱臂元素
+            const verticalTonearm = document.getElementById('vertical-tonearm');
+            const tiltedTonearm = document.getElementById('tilted-tonearm');
+
+            // 专辑点击事件
             albums.forEach(album => {
                 const button = document.getElementById(album.buttonId);
                 const record = document.getElementById(album.recordId);
 
                 if (!button || !record) return;
 
-                // 点击事件
                 button.addEventListener('click', () => {
                     // 隐藏当前显示的唱片
                     if (currentRecord && currentRecord !== record) {
@@ -119,6 +134,34 @@
                     }
                 });
             });
+
+            // 唱臂点击事件 - 只有当有唱片显示时才能切换
+            function toggleTonearm() {
+                if (!currentRecord || !currentRecord.classList.contains('active')) {
+                    // 如果没有唱片显示，不做任何操作
+                    return;
+                }
+
+                // 切换唱臂状态
+                if (isTonearmTilted) {
+                    // 切换到竖直
+                    verticalTonearm.style.opacity = '1';
+                    tiltedTonearm.style.opacity = '0';
+                } else {
+                    // 切换到倾斜
+                    verticalTonearm.style.opacity = '0';
+                    tiltedTonearm.style.opacity = '1';
+                }
+                isTonearmTilted = !isTonearmTilted;
+            }
+
+            // 为两个唱臂添加点击事件
+            if (verticalTonearm) {
+                verticalTonearm.addEventListener('click', toggleTonearm);
+            }
+            if (tiltedTonearm) {
+                tiltedTonearm.addEventListener('click', toggleTonearm);
+            }
         }
     </script>
 </body>
