@@ -123,11 +123,14 @@
 
                 // 切换唱片时，重置唱臂到竖直状态
                 if (isArmTilted) {
-                    playerArm2.style.opacity = '0';
-                    playerArm2.style.pointerEvents = 'none';
+                    isArmTilted = false;
+                    // 确保过渡效果生效
+                    playerArm1.style.transition = 'opacity 0.5s ease-in-out';
+                    playerArm2.style.transition = 'opacity 0.5s ease-in-out';
                     playerArm1.style.opacity = '1';
                     playerArm1.style.pointerEvents = 'auto';
-                    isArmTilted = false;
+                    playerArm2.style.opacity = '0';
+                    playerArm2.style.pointerEvents = 'none';
                 }
 
                 // 计算移动距离
@@ -175,45 +178,124 @@
                 });
             }
 
-            // 切换唱臂状态的函数
-            function togglePlayerArm() {
-                // 只有当有唱片在播放器上时才能切换唱臂
+            // 切换唱臂状态的函数（拖拽版本）
+            let isDragging = false;
+            let dragStartX = 0;
+            let dragStartY = 0;
+            let dragProgress = 0; // 0 = 竖直, 1 = 倾斜
+
+            function startDrag(e) {
+                // 只有当有唱片在播放器上时才能拖拽唱臂
                 if (!currentRecord) {
                     console.log('请先选择一张专辑');
                     return;
                 }
 
-                if (isArmTilted) {
-                    // 从倾斜切换到竖直
-                    playerArm2.style.opacity = '0';
-                    playerArm2.style.pointerEvents = 'none';
-                    playerArm1.style.opacity = '1';
-                    playerArm1.style.pointerEvents = 'auto';
-                    isArmTilted = false;
-                    console.log('唱臂切换到竖直状态');
-                } else {
-                    // 从竖直切换到倾斜
-                    playerArm1.style.opacity = '0';
-                    playerArm1.style.pointerEvents = 'none';
-                    playerArm2.style.opacity = '1';
-                    playerArm2.style.pointerEvents = 'auto';
+                isDragging = true;
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                dragStartX = clientX;
+                dragStartY = clientY;
+
+                // 禁用过渡效果，使拖拽更流畅
+                playerArm1.style.transition = 'none';
+                playerArm2.style.transition = 'none';
+
+                e.preventDefault();
+            }
+
+            function onDrag(e) {
+                if (!isDragging) return;
+
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                // 计算拖拽距离（主要是水平方向）
+                const deltaX = clientX - dragStartX;
+                const deltaY = clientY - dragStartY;
+
+                // 使用向左拖拽来触发倾斜（向左拖拽时 deltaX 为负）
+                // 或者使用向下拖拽
+                const dragDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+                const dragThreshold = 100; // 拖拽阈值（像素）
+
+                // 计算拖拽进度 (0-1)
+                dragProgress = Math.max(0, Math.min(1, dragDistance / dragThreshold));
+
+                // 如果向右或向上拖拽，则反向（恢复竖直）
+                if (deltaX > 0 || deltaY < -10) {
+                    dragProgress = Math.max(0, 1 - dragDistance / dragThreshold);
+                }
+
+                // 更新两个唱臂的透明度
+                updateArmOpacity(dragProgress);
+
+                e.preventDefault();
+            }
+
+            function endDrag(e) {
+                if (!isDragging) return;
+
+                isDragging = false;
+
+                // 恢复过渡效果
+                playerArm1.style.transition = 'opacity 0.5s ease-in-out';
+                playerArm2.style.transition = 'opacity 0.5s ease-in-out';
+
+                // 根据拖拽进度决定最终状态
+                if (dragProgress > 0.5) {
+                    // 完全切换到倾斜状态
                     isArmTilted = true;
+                    updateArmOpacity(1);
                     console.log('唱臂切换到倾斜状态');
+                } else {
+                    // 恢复到竖直状态
+                    isArmTilted = false;
+                    updateArmOpacity(0);
+                    console.log('唱臂恢复到竖直状态');
+                }
+
+                e.preventDefault();
+            }
+
+            function updateArmOpacity(progress) {
+                // progress: 0 = 竖直, 1 = 倾斜
+                const arm1Opacity = 1 - progress;
+                const arm2Opacity = progress;
+
+                playerArm1.style.opacity = arm1Opacity;
+                playerArm2.style.opacity = arm2Opacity;
+
+                // 更新 pointer-events
+                if (arm1Opacity > 0.5) {
+                    playerArm1.style.pointerEvents = 'auto';
+                    playerArm2.style.pointerEvents = 'none';
+                } else {
+                    playerArm1.style.pointerEvents = 'none';
+                    playerArm2.style.pointerEvents = 'auto';
                 }
             }
 
-            // 为唱臂添加点击事件
+            // 为唱臂添加拖拽事件
             if (playerArm1) {
-                playerArm1.addEventListener('click', togglePlayerArm);
+                playerArm1.addEventListener('mousedown', startDrag);
+                playerArm1.addEventListener('touchstart', startDrag);
             }
 
             if (playerArm2) {
-                playerArm2.addEventListener('click', togglePlayerArm);
+                playerArm2.addEventListener('mousedown', startDrag);
+                playerArm2.addEventListener('touchstart', startDrag);
             }
+
+            // 全局 move 和 up 事件
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('mouseup', endDrag);
+            document.addEventListener('touchend', endDrag);
 
             console.log('交互功能已初始化');
             console.log('点击左侧的专辑封面来查看唱片移动到播放器中心的动画效果，并播放对应的音乐');
-            console.log('当唱片在播放器上时，点击唱臂可以切换倾斜状态');
+            console.log('当唱片在播放器上时，拖拽唱臂可以切换倾斜状态');
         }
     </script>
 </body>
