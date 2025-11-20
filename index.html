@@ -165,6 +165,18 @@
             let draggedAudio = null;
             let draggedRecordName = null;
 
+            // 获取 SVG 元素用于坐标转换
+            function getSVGPoint(clientX, clientY) {
+                const svg = document.querySelector('svg');
+                if (!svg) return { x: clientX, y: clientY };
+
+                const pt = svg.createSVGPoint();
+                pt.x = clientX;
+                pt.y = clientY;
+                const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+                return { x: svgP.x, y: svgP.y };
+            }
+
             function startCoverDrag(e, cover, record, audio, recordName) {
                 isDraggingCover = true;
                 draggedCover = cover;
@@ -183,9 +195,12 @@
                 const clientX = e.clientX || (e.touches && e.touches[0].clientX);
                 const clientY = e.clientY || (e.touches && e.touches[0].clientY);
 
+                // 转换为 SVG 坐标
+                const svgPoint = getSVGPoint(clientX, clientY);
+
                 // 检查是否拖拽到播放器区域（播放器中心附近）
                 const distanceToCenter = Math.sqrt(
-                    Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2)
+                    Math.pow(svgPoint.x - centerX, 2) + Math.pow(svgPoint.y - centerY, 2)
                 );
 
                 // 视觉反馈：靠近播放器时改变透明度
@@ -205,14 +220,22 @@
                 // 恢复透明度
                 draggedCover.style.opacity = '1';
 
+                // 转换为 SVG 坐标
+                const svgPoint = getSVGPoint(clientX, clientY);
+
                 // 检查是否拖拽到播放器区域
                 const distanceToCenter = Math.sqrt(
-                    Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2)
+                    Math.pow(svgPoint.x - centerX, 2) + Math.pow(svgPoint.y - centerY, 2)
                 );
+
+                console.log('Drop position:', svgPoint, 'Distance to center:', distanceToCenter);
 
                 // 如果拖拽到播放器附近（半径 300px），则放置唱片
                 if (distanceToCenter < 300) {
                     moveRecordToCenter(draggedRecord, draggedRecordName, draggedAudio);
+                    console.log('唱片已放置');
+                } else {
+                    console.log('拖拽位置太远，未放置唱片');
                 }
 
                 isDraggingCover = false;
