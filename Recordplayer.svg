@@ -35,6 +35,8 @@
   .play-button {
     cursor: pointer;
     transition: transform 0.2s ease;
+    transform-origin: center;
+    transform-box: fill-box;
   }
   .play-button:hover {
     transform: scale(1.1);
