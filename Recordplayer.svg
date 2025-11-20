@@ -107,6 +107,19 @@
 </g>
 </g>
 </g>
+<g id="WeekndRecord" class="record">
+<g id="Group 7_3">
+<circle id="Ellipse 8_5" cx="872" cy="175" r="175" fill="black"/>
+<g id="Group 6_3">
+<mask id="mask2_11_129" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="784" y="87" width="175" height="175">
+<circle id="Ellipse 12_3" cx="871.5" cy="174.5" r="87.5" fill="#D9D9D9"/>
+</mask>
+<g mask="url(#mask2_11_129)">
+<rect id="The Weeknd - After Hours album cover 1_3" x="784" y="88" width="175" height="173" fill="url(#pattern5_11_129)"/>
+</g>
+</g>
+</g>
+</g>
 <g id="Playerarm" class="playerarm">
 <g id="Group 4">
 <path id="Polygon 1" d="M1725.5 663L1724.2 654L1726.8 654L1725.5 663Z" fill="#3D3B3B"/>
@@ -142,19 +155,6 @@
 <g id="Group 3_2">
 <path id="Ellipse 8_4" d="M1638.19 582.228C1631.76 581.759 1623.62 595.186 1621.63 592.944C1621.26 592.531 1624.31 589.893 1628.02 586.59C1631.74 583.287 1639.69 580.154 1640.06 580.567C1640.43 580.979 1640.56 590.158 1638.19 582.228Z" fill="#151515"/>
 <path id="Ellipse 9_2" d="M1637.87 581.867C1631.86 581.876 1623.3 594.825 1621.58 592.892C1621.27 592.537 1624.31 589.893 1628.02 586.59C1631.74 583.287 1639.42 579.85 1639.74 580.205C1640.06 580.561 1639.55 589.023 1637.87 581.867Z" fill="#313131"/>
-</g>
-</g>
-</g>
-<g id="WeekndRecord" class="record">
-<g id="Group 7_3">
-<circle id="Ellipse 8_5" cx="872" cy="175" r="175" fill="black"/>
-<g id="Group 6_3">
-<mask id="mask2_11_129" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="784" y="87" width="175" height="175">
-<circle id="Ellipse 12_3" cx="871.5" cy="174.5" r="87.5" fill="#D9D9D9"/>
-</mask>
-<g mask="url(#mask2_11_129)">
-<rect id="The Weeknd - After Hours album cover 1_3" x="784" y="88" width="175" height="173" fill="url(#pattern5_11_129)"/>
-</g>
 </g>
 </g>
 </g>
