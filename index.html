@@ -77,6 +77,9 @@
             const playerArm1 = document.getElementById('Playerarm');
             const playerArm2 = document.getElementById('Playerarm2');
 
+            // 获取播放按钮
+            const playButton = document.getElementById('Startpoint');
+
             // 获取 RecordCenter 的位置
             const centerX = 1483;
             const centerY = 527;
@@ -92,6 +95,7 @@
             let currentRecord = null;
             let currentAudio = null;
             let isArmTilted = false; // 唱臂是否倾斜
+            let isPlaying = false; // 是否正在播放
 
             // 移动唱片到中心并播放音乐的函数
             function moveRecordToCenter(record, recordName, audio) {
@@ -102,11 +106,12 @@
                     return;
                 }
 
-                // 停止之前的音乐
+                // 停止之前的音乐并重置播放状态
                 if (currentAudio) {
                     currentAudio.pause();
                     currentAudio.currentTime = 0;
                 }
+                isPlaying = false;
 
                 // 隐藏之前的唱片
                 if (currentRecord) {
@@ -148,14 +153,8 @@
                     });
                 });
 
-                // 播放新音乐
-                if (audio) {
-                    audio.play().catch(error => {
-                        console.log('音频播放需要用户交互:', error);
-                    });
-                    currentAudio = audio;
-                }
-
+                // 设置当前音频（不自动播放）
+                currentAudio = audio;
                 currentRecord = record;
             }
 
@@ -247,11 +246,21 @@
                     // 完全切换到倾斜状态
                     isArmTilted = true;
                     updateArmOpacity(1);
+                    // 倾斜时播放音乐
+                    if (currentAudio && isPlaying) {
+                        currentAudio.play().catch(error => {
+                            console.log('音频播放错误:', error);
+                        });
+                    }
                     console.log('唱臂切换到倾斜状态');
                 } else {
                     // 恢复到竖直状态
                     isArmTilted = false;
                     updateArmOpacity(0);
+                    // 竖直时暂停音乐
+                    if (currentAudio && isPlaying) {
+                        currentAudio.pause();
+                    }
                     console.log('唱臂恢复到竖直状态');
                 }
 
@@ -293,9 +302,80 @@
             document.addEventListener('mouseup', endDrag);
             document.addEventListener('touchend', endDrag);
 
+            // 播放按钮点击事件
+            if (playButton) {
+                playButton.addEventListener('click', () => {
+                    if (!currentRecord || !currentAudio) {
+                        console.log('请先选择一张专辑');
+                        return;
+                    }
+
+                    if (!isPlaying) {
+                        // 开始播放
+                        isPlaying = true;
+                        if (isArmTilted) {
+                            currentAudio.play().catch(error => {
+                                console.log('音频播放错误:', error);
+                            });
+                        }
+                        console.log('播放已启动');
+                    } else {
+                        // 停止播放
+                        isPlaying = false;
+                        currentAudio.pause();
+                        console.log('播放已停止');
+                    }
+                });
+            }
+
+            // 弹出唱片的函数
+            function ejectRecord() {
+                if (!currentRecord) {
+                    return;
+                }
+
+                // 停止音乐
+                if (currentAudio) {
+                    currentAudio.pause();
+                    currentAudio.currentTime = 0;
+                }
+                isPlaying = false;
+
+                // 重置唱臂到竖直状态
+                if (isArmTilted) {
+                    isArmTilted = false;
+                    playerArm1.style.transition = 'opacity 0.5s ease-in-out';
+                    playerArm2.style.transition = 'opacity 0.5s ease-in-out';
+                    playerArm1.style.opacity = '1';
+                    playerArm1.style.pointerEvents = 'auto';
+                    playerArm2.style.opacity = '0';
+                    playerArm2.style.pointerEvents = 'none';
+                }
+
+                // 隐藏唱片
+                currentRecord.classList.remove('show');
+                currentRecord.style.transform = '';
+
+                setTimeout(() => {
+                    currentRecord = null;
+                    currentAudio = null;
+                }, 300);
+
+                console.log('唱片已弹出');
+            }
+
+            // ESC 键事件
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' || e.key === 'Esc') {
+                    ejectRecord();
+                }
+            });
+
             console.log('交互功能已初始化');
-            console.log('点击左侧的专辑封面来查看唱片移动到播放器中心的动画效果，并播放对应的音乐');
-            console.log('当唱片在播放器上时，拖拽唱臂可以切换倾斜状态');
+            console.log('点击左侧的专辑封面选择唱片');
+            console.log('点击播放按钮开始/停止播放');
+            console.log('拖拽唱臂：倾斜播放，竖直暂停');
+            console.log('按 ESC 键弹出唱片');
         }
     </script>
 </body>

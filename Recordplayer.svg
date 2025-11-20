@@ -31,6 +31,17 @@
     opacity: 0;
     pointer-events: none;
   }
+  /* 播放按钮样式 */
+  .play-button {
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .play-button:hover {
+    transform: scale(1.1);
+  }
+  .play-button:active {
+    transform: scale(0.95);
+  }
 </style>
 <g id="Frame 2">
 <rect width="1920" height="1080" fill="white"/>
@@ -70,7 +81,7 @@
 <circle id="Ellipse 6" cx="1727" cy="417" r="29" fill="black"/>
 <circle id="Ellipse 7" cx="1727" cy="417" r="19" fill="#313131"/>
 <rect id="Rectangle 21" x="1755" y="463" width="25" height="48" fill="#757575"/>
-<g id="Startpoint">
+<g id="Startpoint" class="play-button">
 <g id="Group 5">
 <rect id="Rectangle 23" x="1757" y="465" width="21" height="42" fill="#151515"/>
 <path id="Rectangle 22" d="M1751.5 465H1773L1776.5 486L1773 507H1751.5L1754 486L1751.5 465Z" fill="#313131"/>
