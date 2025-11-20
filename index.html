@@ -158,24 +158,103 @@
                 currentRecord = record;
             }
 
-            // 添加点击事件
+            // 拖拽专辑封面功能
+            let isDraggingCover = false;
+            let draggedCover = null;
+            let draggedRecord = null;
+            let draggedAudio = null;
+            let draggedRecordName = null;
+
+            function startCoverDrag(e, cover, record, audio, recordName) {
+                isDraggingCover = true;
+                draggedCover = cover;
+                draggedRecord = record;
+                draggedAudio = audio;
+                draggedRecordName = recordName;
+
+                // 添加视觉反馈
+                cover.style.opacity = '0.7';
+                e.preventDefault();
+            }
+
+            function onCoverDrag(e) {
+                if (!isDraggingCover) return;
+
+                const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+
+                // 检查是否拖拽到播放器区域（播放器中心附近）
+                const distanceToCenter = Math.sqrt(
+                    Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2)
+                );
+
+                // 视觉反馈：靠近播放器时改变透明度
+                if (distanceToCenter < 300) {
+                    draggedCover.style.opacity = '0.5';
+                } else {
+                    draggedCover.style.opacity = '0.7';
+                }
+            }
+
+            function endCoverDrag(e) {
+                if (!isDraggingCover) return;
+
+                const clientX = e.clientX || (e.changedTouches && e.changedTouches[0].clientX);
+                const clientY = e.clientY || (e.changedTouches && e.changedTouches[0].clientY);
+
+                // 恢复透明度
+                draggedCover.style.opacity = '1';
+
+                // 检查是否拖拽到播放器区域
+                const distanceToCenter = Math.sqrt(
+                    Math.pow(clientX - centerX, 2) + Math.pow(clientY - centerY, 2)
+                );
+
+                // 如果拖拽到播放器附近（半径 300px），则放置唱片
+                if (distanceToCenter < 300) {
+                    moveRecordToCenter(draggedRecord, draggedRecordName, draggedAudio);
+                }
+
+                isDraggingCover = false;
+                draggedCover = null;
+                draggedRecord = null;
+                draggedAudio = null;
+                draggedRecordName = null;
+            }
+
+            // 为专辑封面添加拖拽事件
             if (weekndCover) {
-                weekndCover.addEventListener('click', () => {
-                    moveRecordToCenter(weekndRecord, 'weeknd', weekndAudio);
+                weekndCover.addEventListener('mousedown', (e) => {
+                    startCoverDrag(e, weekndCover, weekndRecord, weekndAudio, 'weeknd');
+                });
+                weekndCover.addEventListener('touchstart', (e) => {
+                    startCoverDrag(e, weekndCover, weekndRecord, weekndAudio, 'weeknd');
                 });
             }
 
             if (beatlesCover) {
-                beatlesCover.addEventListener('click', () => {
-                    moveRecordToCenter(beatlesRecord, 'beatles', beatlesAudio);
+                beatlesCover.addEventListener('mousedown', (e) => {
+                    startCoverDrag(e, beatlesCover, beatlesRecord, beatlesAudio, 'beatles');
+                });
+                beatlesCover.addEventListener('touchstart', (e) => {
+                    startCoverDrag(e, beatlesCover, beatlesRecord, beatlesAudio, 'beatles');
                 });
             }
 
             if (charlieCover) {
-                charlieCover.addEventListener('click', () => {
-                    moveRecordToCenter(charlieRecord, 'charlie', charlieAudio);
+                charlieCover.addEventListener('mousedown', (e) => {
+                    startCoverDrag(e, charlieCover, charlieRecord, charlieAudio, 'charlie');
+                });
+                charlieCover.addEventListener('touchstart', (e) => {
+                    startCoverDrag(e, charlieCover, charlieRecord, charlieAudio, 'charlie');
                 });
             }
+
+            // 全局拖拽事件（专辑封面）
+            document.addEventListener('mousemove', onCoverDrag);
+            document.addEventListener('touchmove', onCoverDrag);
+            document.addEventListener('mouseup', endCoverDrag);
+            document.addEventListener('touchend', endCoverDrag);
 
             // 切换唱臂状态的函数（拖拽版本）
             let isDragging = false;
@@ -372,7 +451,7 @@
             });
 
             console.log('交互功能已初始化');
-            console.log('点击左侧的专辑封面选择唱片');
+            console.log('拖拽左侧的专辑封面到播放器中心选择唱片');
             console.log('点击播放按钮开始/停止播放');
             console.log('拖拽唱臂：倾斜播放，竖直暂停');
             console.log('按 ESC 键弹出唱片');
